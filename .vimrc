@@ -14,7 +14,9 @@ endfunction
 
 function! Firefox()
        let vis = s:get_visual_selection()
-       execute "!firefox " . vis
+       let visual = substitute(vis, "#", '\\\\#', "")
+       let com = "!firefox " . visual
+       execute com
 endfunction
 
 vmap <C-f> :call Firefox()<CR>
