@@ -75,6 +75,14 @@ command! DeployAEM call DeployAEM()
 function! Netbeans()
     let curline = line(".")
     let curfile = expand("%:p")
-    system('netbeans open '+curfile+':'+curline)
+    let com0 = 'cygpath -w '.curfile
+    :echo com0
+    let output = system(com0)
+    let winpath = substitute(output, "\n", "", "")
+    :echo winpath
+    let com = '!`netbeans "'.winpath.'":'.curline.'`'
+    :echo com
+    execute com
+endfunction
 
 command! Netbeans call Netbeans()
