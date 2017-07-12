@@ -86,3 +86,12 @@ function! Netbeans()
 endfunction
 
 command! Netbeans call Netbeans()
+
+function! OpenFile()
+    let curline = line(".")
+    normal 0yt:
+    let var = @0
+    execute "edit " . var
+endfunction
+
+command! OpenFile call OpenFile()
