@@ -91,7 +91,17 @@ function! OpenFile()
     let curline = line(".")
     normal 0yt:
     let var = @0
-    execute "edit " . var
+    execute "tabe " . var
 endfunction
 
 command! OpenFile call OpenFile()
+
+function! GrepWord()
+    let var = expand("<cword>")
+    tabe
+    let com = 'read !grep -r "'.var.'"'
+    echo com
+    execute com
+endfunction
+
+command! GrepWord call GrepWord()
