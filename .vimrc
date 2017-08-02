@@ -105,3 +105,33 @@ function! GrepWord()
 endfunction
 
 command! GrepWord call GrepWord()
+
+" copypaste from stackoverflow, thanks mr statox
+function! MkSession(...)
+    " Handle the argument
+    if empty(a:000)
+        let filename = "Session.vim"
+    else
+        let filename = fnameescape(a:1)
+    endif
+
+    " Create the session file according to the argument passed
+    execute 'mksession! ' . filename
+
+    " The list containing the lines on the unnmaed buffers
+    let noname_buffers = []
+
+    " Get the lines of all the unnamed buffers in the list
+    execute "silent! bufdo \| if expand('%')=='' \| call add(noname_buffers, getline(1, '$')) \| endif"
+
+    " For each set of lines
+    " Add into the session file a line creating an empty buffer
+    " and a line adding its content
+    for lines in noname_buffers
+        call system('echo "enew" >> '.filename)
+        call system('echo "call append(0, [\"'. join(lines, '\",\"') .'\"])" >>'. filename)
+    endfor
+
+endfunction
+
+command! -nargs=? Mksession call MkSession(<f-args>)
