@@ -106,6 +106,17 @@ endfunction
 
 command! GrepWord call GrepWord()
 
+function! PergWord()
+    let var = expand("<cword>")
+    tabe
+    let com = 'read !perg.py . '.var
+    echo com
+    execute com
+endfunction
+
+command! PergWord call PergWord()
+
+
 " copypaste from stackoverflow, thanks mr statox
 function! MkSession(...)
     " Handle the argument
