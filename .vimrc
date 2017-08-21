@@ -172,11 +172,19 @@ command! GitStatus call GitStatus()
 
 " commit a change
 function! GitCommit(comment)
-    let com = 'read !tf checkin -comment "'.a:comment.'"'
+    let com = 'read !git commit -m "'.a:comment.'"'
     echo com
     tabe
     "execute com
 endfunction
+
+command! -nargs=1 GitCommit
+
+function! GitPush()
+    !git push
+endfunction
+
+command! GitPush call GitPush()
 
 " copypaste from stackoverflow, thanks mr statox
 function! MkSession(...)
