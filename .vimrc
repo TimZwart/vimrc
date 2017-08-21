@@ -33,6 +33,7 @@ let &t_SI.="\e[5 q"
 let &t_EI.="\e[1 q"
 let &t_te.="\e[0 q"
 
+"deploys ING SSO project, work related
 function! DeployINGSSO()
 	let curdir = getcwd()
 	cd /winhome/Downloads/ING_SSO
@@ -53,7 +54,7 @@ function! DeployINGSSO()
 endfunction
 
 command! DeployINGSSO call DeployINGSSO()
-
+"deploys AEM project work related
 function! DeployAEM()
 	let curdir = getcwd()
 	cd /winhome/Downloads/INGEX_Core
@@ -72,6 +73,7 @@ endfunction
 
 command! DeployAEM call DeployAEM()
 
+"opens netbeans at the current line of the current file
 function! Netbeans()
     let curline = line(".")
     let curfile = expand("%:p")
@@ -87,15 +89,25 @@ endfunction
 
 command! Netbeans call Netbeans()
 
+"opens current file of grep or perg output
+
 function! OpenFile()
-    let curline = line(".")
-    normal 0yt:
-    let var = @0
-    execute "tabe " . var
+    "check if current line has a colon, if so assume its grep output, else
+    "assume its perg output
+    normal 0y$
+    let linetext = @0
+    if match(linetext, ":") != -1
+        normal 0yt:
+        let filename = @0
+    else
+        let filename = linetext
+    endif
+    execute "tabe " . filename
 endfunction
 
 command! OpenFile call OpenFile()
 
+"opens a tab with results from a grep for the word under the cursor
 function! GrepWord()
     let var = expand("<cword>")
     tabe
@@ -104,6 +116,7 @@ function! GrepWord()
     execute com
 endfunction
 
+"opens a tab with results from a perg.py for the word under the cursor
 command! GrepWord call GrepWord()
 
 function! PergWord()
@@ -116,6 +129,54 @@ endfunction
 
 command! PergWord call PergWord()
 
+"add file to pending changes
+function! TFAdd()
+    let curfile = expand("%:p")
+    let com = 'read !tf add '.curfile
+    echo com
+    tabe   
+    execute com
+endfunction
+
+command! TFadd call TFadd()
+
+"view pending changes
+function! TFStatus()
+    let com = 'read !tf status'
+    echo com
+    tabe   
+    execute com
+endfunction
+
+command! TFStatus call TFStatus()
+
+" check in the pending changes
+function! TFCheckin(comment)
+    let com = 'read !tf checkin -comment "'.a:comment.'"'
+    echo com
+    tabe
+    "execute com
+endfunction
+
+command! -nargs=1 TFCheckin call TFCheckin(<args>)
+
+"view git status
+function! GitStatus()
+    let com = 'read !git status'
+    echo com
+    tabe
+    execute com
+endfunction
+
+command! GitStatus call GitStatus()
+
+" commit a change
+function! GitCommit(comment)
+    let com = 'read !tf checkin -comment "'.a:comment.'"'
+    echo com
+    tabe
+    "execute com
+endfunction
 
 " copypaste from stackoverflow, thanks mr statox
 function! MkSession(...)
