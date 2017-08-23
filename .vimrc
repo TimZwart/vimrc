@@ -12,6 +12,7 @@ function! s:get_visual_selection()
   return join(lines, "\n")
 endfunction
 
+"open firefox on the visually selected string
 function! Firefox()
        let vis = s:get_visual_selection()
        let visual = substitute(vis, "#", '\\\\#', "")
@@ -24,14 +25,19 @@ vmap <C-f> :call Firefox()<CR>
 set nocompatible
 filetype plugin indent on
 
+"tabs to spaces
 set tabstop=4
 set shiftwidth=4
 set expandtab
 
+"cygwin related
 let &t_ti.="\e[1 q"
 let &t_SI.="\e[5 q"
 let &t_EI.="\e[1 q"
 let &t_te.="\e[0 q"
+
+"get netrw to delete nonempty directories
+let g:netrw_localrmdir='rm -r'
 
 "deploys ING SSO project, work related
 function! DeployINGSSO()
@@ -54,6 +60,7 @@ function! DeployINGSSO()
 endfunction
 
 command! DeployINGSSO call DeployINGSSO()
+
 "deploys AEM project work related
 function! DeployAEM()
 	let curdir = getcwd()
@@ -107,6 +114,20 @@ endfunction
 
 command! OpenFile call OpenFile()
 
+"this one is more for maven outputs hold the cursor somewhere on the file name
+"and open it with this command
+function! OpenFile2()
+    normal T yt:
+    let copied_filename = @0
+    let filename = '/c' . substitute(copied_filename, "\\", "\/", "g")
+"    echo "filename == " . filename
+    let com = "tabe " . filename
+    echo com
+    execute com
+endfunction
+
+command! OpenFile2 call OpenFile2()
+
 "opens a tab with results from a grep for the word under the cursor
 function! GrepWord()
     let var = expand("<cword>")
@@ -158,7 +179,18 @@ function! TFCheckin(comment)
     "execute com
 endfunction
 
-command! -nargs=1 TFCheckin call TFCheckin(<args>)
+command! -nargs=1 TFCheckin call TFCheckin(<q-args>)
+
+"add file to next commit
+function! GitAdd()
+    let curfile = expand("%:p")
+    let com = 'read !git add '.curfile
+    echo com
+    tabe   
+    execute com
+endfunction
+
+command! GitAdd call GitAdd()
 
 "view git status
 function! GitStatus()
@@ -178,15 +210,48 @@ function! GitCommit(comment)
     "execute com
 endfunction
 
-command! -nargs=1 GitCommit
+command! -nargs=1 GitCommit call GitCommit(<q-args>)
 
+"push the change
 function! GitPush()
     !git push
 endfunction
 
 command! GitPush call GitPush()
 
+"prints a dependency tree for maven project
+function! MavenTree()
+    let com = 'read !mvn dependency:tree -Dverbose'
+    echo com
+    tabe
+    execute com
+endfunction
+
+command! MavenTree call MavenTree()
+
+"prints the effective pom
+function! MavenEffectivePom()
+    let com = 'read !mvn help:effective-pom'
+    echo com
+    tabe
+    execute com
+endfunction
+
+command! MavenEffectivePom call MavenEffectivePom()
+
+"finds a file"
+function! Find(filename)
+    let com = 'read !find -name "'.a:filename.'"'
+    echo com
+    tabe
+    execute com
+endfunction
+
+command! -nargs=1 Find call Find(<q-args>)
+
 " copypaste from stackoverflow, thanks mr statox
+" supposed to save also unwritten stuff only does not really work. seems to
+" have permissions problem
 function! MkSession(...)
     " Handle the argument
     if empty(a:000)
