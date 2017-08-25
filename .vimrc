@@ -1,4 +1,19 @@
+set nocompatible
+filetype plugin indent on
+
+"colorscheme
+"crappy: blue, default, morning, peachpuff, shine
+"ok: the rest
+"zellner maybe too distractive
+colorscheme desert
+
+"tabs to spaces
+set tabstop=4
+set shiftwidth=4
 set expandtab
+
+"autocomplete menu in command shows all matches
+set wildmenu
 
 function! s:get_visual_selection()
   " public domain
@@ -22,13 +37,6 @@ endfunction
 
 vmap <C-f> :call Firefox()<CR>
 
-set nocompatible
-filetype plugin indent on
-
-"tabs to spaces
-set tabstop=4
-set shiftwidth=4
-set expandtab
 
 "cygwin related
 let &t_ti.="\e[1 q"
@@ -218,6 +226,47 @@ function! GitPush()
 endfunction
 
 command! GitPush call GitPush()
+
+function! Pop(l, i)
+    let new_list = deepcopy(a:l)
+    call remove(new_list, a:i)
+    return new_list
+endfunction
+
+function! RelativeGitPath(path)
+    "split up the path
+    let dirs = split(path)
+    "until we have the git path
+    let curdirs = dirs
+    let gitfound = false
+    while !gitfound && len(curdirs) > 0
+        "remove the last element of list
+        let curdirs = Pop(curdirs, len(curdirs) )
+        "add .git to the list
+        let potentialgitdirs = add(curdirs, ['.git'])
+        "join the path together
+        let potentialgitpath = join(curdirs, "/")
+        "check whether the .git exists
+        if filereadable(potentialgitpath)
+            gitfound = true
+        endif
+        "repeat from step 2
+    endwhile
+    "subtract all elements from the git path from the original list
+    "join them together
+    "return the path relative to the .git directory parent
+endfunction
+
+function! GitLog()
+    let curfile = expand("%:p")
+    RelativeGitPath(curfile)
+    let com = 'read !git log '.curfile
+    echo com
+    tabe
+    execute com
+endfunction
+
+command! GitLog call GitLog()
 
 "prints a dependency tree for maven project
 function! MavenTree()
