@@ -233,34 +233,70 @@ function! Pop(l, i)
     return new_list
 endfunction
 
+"python has a quick way to subtract lists
+function! ListSubstract(list1, list2)
+python << EOF
+import vim
+list1 = vim.eval("a:list1")
+print list1
+#    list2 = vim.eval("a:list2")
+#    #substract the lists
+#    l = [ x for x in list1 if x not in list2 ]
+#    #return to vim
+#    vim.command("let retval = %l"%l)
+EOF
+    "return retval
+endfunction
+
+command! ListSubtractTest call ListSubstract(["1", "2", "3"], ["1", "2"])
+
 function! RelativeGitPath(path)
     "split up the path
-    let dirs = split(path)
+    let dirs = split(a:path, "/")
     "until we have the git path
     let curdirs = dirs
-    let gitfound = false
-    while !gitfound && len(curdirs) > 0
+    echo curdirs
+    "1 is true, 0 is false
+    let gitfound = 0
+    let length = len(curdirs)
+    while !gitfound && length > 0
         "remove the last element of list
-        let curdirs = Pop(curdirs, len(curdirs) )
+        let curdirs = Pop(curdirs, length - 1 )
+        echo curdirs
+        let length = length - 1
         "add .git to the list
-        let potentialgitdirs = add(curdirs, ['.git'])
+        let potentialgitdirs = add(curdirs, '.git')
+        echo potentialgitdirs
         "join the path together
-        let potentialgitpath = join(curdirs, "/")
+        let potentialgitpath = "/".join(curdirs, "/")
+        echo potentialgitpath
         "check whether the .git exists
-        if filereadable(potentialgitpath)
-            gitfound = true
+        if isdirectory(potentialgitpath)
+            let gitfound = 1
         endif
         "repeat from step 2
     endwhile
+    if !gitfound
+        throw 'git path was not found'
+    endif
     "subtract all elements from the git path from the original list
+    let gitdirs = ListSubstract(dirs, curdirs)
     "join them together
+    let gitpath = join(gitdirs, "/")
     "return the path relative to the .git directory parent
+    return gitpath
 endfunction
+
+function! RelativeGitPathTest()
+    RelativeGitPath("/cygdrive/c/Users/tim.zwart/Downloads/INGEX_core/pom.xml")
+endfunction
+
+command! RelativeGitPathTest call RelativeGitPath("/cygdrive/c/Users/tim.zwart/Downloads/INGEX_core/pom.xml")
 
 function! GitLog()
     let curfile = expand("%:p")
-    RelativeGitPath(curfile)
-    let com = 'read !git log '.curfile
+    let path = RelativeGitPath(curfile)
+    let com = 'read !git log -p '.path
     echo com
     tabe
     execute com
