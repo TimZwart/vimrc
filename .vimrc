@@ -37,7 +37,6 @@ endfunction
 
 vmap <C-f> :call Firefox()<CR>
 
-
 "cygwin related
 let &t_ti.="\e[1 q"
 let &t_SI.="\e[5 q"
@@ -157,6 +156,35 @@ function! PergWord()
 endfunction
 
 command! PergWord call PergWord()
+
+function! Perg(searchterm)
+    tabe
+    let com = 'read !perg.py . '.a:searchterm
+    echo com
+    execute com
+endfunction
+            
+command! -nargs=1 Perg call Perg(<q-args>)
+
+"unzip a zip from netrw directory browser
+function! Unzip()
+    let lastdir = getcwd()
+    "change cwd to the browsing directory in netrw
+    normal c
+    normal 0y$
+    let linetext = @0
+    "remove the star
+    let file = substitute(linetext, "*$", "", "")
+    let extraction_dir1 = substitute(file, "\.zip$", "", "")
+    let extraction_dir = substitute(extraction_dir1, "\.jar$", "", "")
+    let com = '!unzip '.file.' -d '.extraction_dir
+    execute com
+    "select the directory as it was before
+    let com2 = 'cd '.lastdir
+    execute com2
+endfunction
+
+command! Unzip call Unzip()
 
 "add file to pending changes
 function! TFAdd()
