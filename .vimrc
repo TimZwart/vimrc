@@ -46,47 +46,6 @@ let &t_te.="\e[0 q"
 "get netrw to delete nonempty directories
 let g:netrw_localrmdir='rm -r'
 
-"deploys ING SSO project, work related
-function! DeployINGSSO()
-	let curdir = getcwd()
-	cd /winhome/Downloads/ING_SSO
-	echom 'running maven'
-	let mvnresult = system('mvn clean install')
-	if !v:shell_error 
-		echom 'copying wars'
-		silent !cp ./extranet-sso-saml/target/extranet-sso-saml.war ../jboss-eap-6.4/jboss-eap-6.4/standalone/deployments
-		silent !cp ./extranet-sso-web/target/extranet-sso-web.war ../jboss-eap-6.4/jboss-eap-6.4/standalone/deployments
-		silent !cp ./extranet-sso-trust/target/extranet-sso-trust.war ../jboss-eap-6.4/jboss-eap-6.4/standalone/deployments
-	else	
-		echom 'maven errors!'
-		tabe ++ff=dos
-		call append(0, mvnresult)
-        :%s/\r/\r\n/g
-	endif
-	cd `=curdir`
-endfunction
-
-command! DeployINGSSO call DeployINGSSO()
-
-"deploys AEM project work related
-function! DeployAEM()
-	let curdir = getcwd()
-	cd /winhome/Downloads/INGEX_Core
-	echom 'running maven'
-	let mvnresult = system('mvn -Pdeploy_package_to_author_and_publisher_on_local clean install')
-	if !v:shell_error 
-		echom 'great success!'
-	else	
-		echom 'maven errors!'
-		tabe ++ff=dos
-		call append(0, mvnresult)
-        :%s/\r/\r\n/g
-	endif
-	cd `=curdir`
-endfunction
-
-command! DeployAEM call DeployAEM()
-
 "opens netbeans at the current line of the current file
 function! Netbeans()
     let curline = line(".")
