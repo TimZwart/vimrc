@@ -226,13 +226,18 @@ python << EOF
 import vim
 list1 = vim.eval("a:list1")
 print list1
-#    list2 = vim.eval("a:list2")
-#    #substract the lists
-#    l = [ x for x in list1 if x not in list2 ]
-#    #return to vim
-#    vim.command("let retval = %l"%l)
+list2 = vim.eval("a:list2")
+print list2
+#substract the lists
+l = [ x for x in list1 if x not in list2 ]
+print l
+liststr = '["'+'",'.join(l)+'"]'
+print liststr
+#return to vim
+vim.command("let retval = "+liststr)
 EOF
-    "return retval
+    echo retval
+    return retval
 endfunction
 
 command! ListSubtractTest call ListSubstract(["1", "2", "3"], ["1", "2"])
@@ -352,3 +357,9 @@ function! MkSession(...)
 endfunction
 
 command! -nargs=? Mksession call MkSession(<f-args>)
+
+function! NextFileInPergSearch()
+    /^\(\(^  \)\@!.\)*$
+endfunction
+
+command! PergSearchNextFile call NextFileInPergSearch()
