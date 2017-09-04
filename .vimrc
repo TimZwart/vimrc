@@ -178,11 +178,19 @@ command! -nargs=1 TFCheckin call TFCheckin(<q-args>)
 
 "add file to next commit
 function! GitAdd()
-    let curfile = expand("%:p")
-    let com = 'read !git add '.curfile
+    let olddir = getcwd()
+    let dirofcurfile = expand('%:p:h')
+    let com0 = 'cd '.dirofcurfile
+    execute com0
+    let curfile = expand('%:p')
+    let path = RelativeGitPath(curfile)
+ 
+    let com = 'read !git add '.path
     echo com
     tabe   
     execute com
+    let com1 = 'cd '.olddir
+    execute com1
 endfunction
 
 command! GitAdd call GitAdd()
@@ -202,7 +210,7 @@ function! GitCommit(comment)
     let com = 'read !git commit -m "'.a:comment.'"'
     echo com
     tabe
-    "execute com
+    execute com
 endfunction
 
 command! -nargs=1 GitCommit call GitCommit(<q-args>)
@@ -225,43 +233,44 @@ function! ListSubstract(list1, list2)
 python << EOF
 import vim
 list1 = vim.eval("a:list1")
-print list1
+#print list1
 list2 = vim.eval("a:list2")
-print list2
+#print list2
 #substract the lists
 l = [ x for x in list1 if x not in list2 ]
-print l
+#print l
 liststr = '["'+'",'.join(l)+'"]'
-print liststr
+#print liststr
 #return to vim
 vim.command("let retval = "+liststr)
 EOF
-    echo retval
+    "echo retval
     return retval
 endfunction
 
 command! ListSubtractTest call ListSubstract(["1", "2", "3"], ["1", "2"])
 
+"gets the path of relative to the root of the git repository
 function! RelativeGitPath(path)
     "split up the path
     let dirs = split(a:path, "/")
-    "until we have the git path
     let curdirs = dirs
-    echo curdirs
+    "echo curdirs
     "1 is true, 0 is false
     let gitfound = 0
     let length = len(curdirs)
+    "until we have the git path
     while !gitfound && length > 0
         "remove the last element of list
         let curdirs = Pop(curdirs, length - 1 )
-        echo curdirs
+        "echo curdirs
         let length = length - 1
         "add .git to the list
         let potentialgitdirs = add(curdirs, '.git')
-        echo potentialgitdirs
+        "echo potentialgitdirs
         "join the path together
         let potentialgitpath = "/".join(curdirs, "/")
-        echo potentialgitpath
+        "echo potentialgitpath
         "check whether the .git exists
         if isdirectory(potentialgitpath)
             let gitfound = 1
@@ -276,6 +285,7 @@ function! RelativeGitPath(path)
     "join them together
     let gitpath = join(gitdirs, "/")
     "return the path relative to the .git directory parent
+    echo gitpath
     return gitpath
 endfunction
 
@@ -285,13 +295,23 @@ endfunction
 
 command! RelativeGitPathTest call RelativeGitPath("/cygdrive/c/Users/tim.zwart/Downloads/INGEX_core/pom.xml")
 
+command! RelativeGitPathTest2 call RelativeGitPath("/home/Tim.Zwart/vimrc/.vimrc")
+
 function! GitLog()
-    let curfile = expand("%:p")
+    "old dir
+    let olddir = getcwd()
+    let dirofcurfile = expand('%:p:h')
+    let com0 = 'cd '.dirofcurfile
+    execute com0
+    let curfile = expand('%:p')
+    echo curfile
     let path = RelativeGitPath(curfile)
     let com = 'read !git log -p '.path
     echo com
     tabe
     execute com
+    let com1 = 'cd '.olddir
+    execute com1
 endfunction
 
 command! GitLog call GitLog()
