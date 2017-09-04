@@ -207,17 +207,29 @@ command! GitStatus call GitStatus()
 
 " commit a change
 function! GitCommit(comment)
+    let olddir = getcwd()
+    let dirofcurfile = expand('%:p:h')
+    let com0 = 'cd '.dirofcurfile
+    execute com0
     let com = 'read !git commit -m "'.a:comment.'"'
     echo com
     tabe
     execute com
+    let com1 = 'cd '.olddir
+    execute com1
 endfunction
 
 command! -nargs=1 GitCommit call GitCommit(<q-args>)
 
 "push the change
 function! GitPush()
+    let olddir = getcwd()
+    let dirofcurfile = expand('%:p:h')
+    let com0 = 'cd '.dirofcurfile
+    execute com0
     !git push
+    let com1 = 'cd '.olddir
+    execute com1
 endfunction
 
 command! GitPush call GitPush()
