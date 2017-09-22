@@ -75,7 +75,7 @@ function! OpenFile()
     else
         let rawfilename = linetext
     endif
-    filename = fnameescape(rawfilename)
+    let filename = fnameescape(rawfilename)
     execute "tabe " . filename
 endfunction
 
