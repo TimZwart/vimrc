@@ -71,10 +71,11 @@ function! OpenFile()
     let linetext = @0
     if match(linetext, ":") != -1
         normal 0yt:
-        let filename = @0
+        let rawfilename = @0
     else
-        let filename = linetext
+        let rawfilename = linetext
     endif
+    filename = fnameescape(rawfilename)
     execute "tabe " . filename
 endfunction
 
