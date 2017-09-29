@@ -235,6 +235,48 @@ endfunction
 
 command! GitPush call GitPush()
 
+function! GitGraph()
+    tabe
+    read !git log --graph --abbrev-commit --decorate --date=relative --all
+endfunction
+
+command! GitGraph call GitGraph()
+
+function! GitGraph2()
+    tabe
+    read !git log --graph --oneline --decorate --all
+endfunction
+
+command! GitGraph2 call GitGraph2()
+
+function! GitGraph3()
+    tabe
+    read !git log --graph --full-history --all --pretty=format:"%h%x09%d%x20%s"
+endfunction
+
+command! GitGraph3 call GitGraph3()
+
+function! GitAncestorBranch()
+    tabe
+    read !git show-branch -a| grep '\*'| grep -v `git rev-parse --abbrev-ref HEAD`| head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | 's/[\^~].*//'
+endfunction
+
+command! GitAncestorBranch call GitAncestorBranch()
+
+function! GitDiscardChanges()
+    new
+    read !git stash save --keep-index
+endfunction
+
+command! GitDiscardChanges call GitDiscardChanges()
+
+function! GitPull()
+    new
+    read !git pull
+endfunction
+
+command! GitPull call GitPull()
+
 function! Pop(l, i)
     let new_list = deepcopy(a:l)
     call remove(new_list, a:i)
