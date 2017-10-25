@@ -445,27 +445,44 @@ command! PergSearchNextFile call NextFileInPergSearch()
 " Sources:
 " - https://github.com/tpope/vim-fugitive/issues/147#issuecomment-7572351
 " - http://www.reddit.com/r/vim/comments/yhsn6/is_it_possible_to_work_around_the_symlink_bug/c5w91qw
-  function! MyFollowSymlink(...)
-    if exists('w:no_resolve_symlink') && w:no_resolve_symlink
-      return
-    endif
-    let fname = a:0 ? a:1 : expand('%')
-    if fname =~ '^\w\+:/'
-      " do not mess with 'fugitive://' etc
-      return
-    endif
-    let fname = simplify(fname)
+function! MyFollowSymlink(...)
+  if exists('w:no_resolve_symlink') && w:no_resolve_symlink
+    return
+  endif
+  let fname = a:0 ? a:1 : expand('%')
+  if fname =~ '^\w\+:/'
+    " do not mess with 'fugitive://' etc
+    return
+  endif
+  let fname = simplify(fname)
 
-    let resolvedfile = resolve(fname)
-    if resolvedfile == fname
-      return
-    endif
-    let resolvedfile = fnameescape(resolvedfile)
-    echohl WarningMsg | echomsg 'Resolving symlink' fname '=>' resolvedfile | echohl None
-    " exec 'noautocmd file ' . resolvedfile
-    " XXX: problems with AutojumpLastPosition: line("'\"") is 1 always.
-    exec 'file ' . resolvedfile
-  endfunction
-  command! FollowSymlink call MyFollowSymlink()
-  command! ToggleFollowSymlink let w:no_resolve_symlink = !get(w:, 'no_resolve_symlink', 0) | echo "w:no_resolve_symlink =>" w:no_resolve_symlink
-  au BufReadPost * call MyFollowSymlink(expand('<afile>'))
+  let resolvedfile = resolve(fname)
+  if resolvedfile == fname
+    return
+  endif
+  let resolvedfile = fnameescape(resolvedfile)
+  echohl WarningMsg | echomsg 'Resolving symlink' fname '=>' resolvedfile | echohl None
+  " exec 'noautocmd file ' . resolvedfile
+  " XXX: problems with AutojumpLastPosition: line("'\"") is 1 always.
+  exec 'file ' . resolvedfile
+endfunction
+command! FollowSymlink call MyFollowSymlink()
+command! ToggleFollowSymlink let w:no_resolve_symlink = !get(w:, 'no_resolve_symlink', 0) | echo "w:no_resolve_symlink =>" w:no_resolve_symlink
+au BufReadPost * call MyFollowSymlink(expand('<afile>'))
+
+" SubstituteAccrossDirectory you use by selecting the replacement, then typing
+" the search pattern
+function! SubstituteAccrossDirectory()
+    let vis = s:get_visual_selection()
+    let selection = vis
+    call inputsave()
+    let searchpattern = input("Enter search pattern")
+    call inputrestore()
+    echo "\n"
+    new
+    let com = 'read !find . -name "*" -type f -exec sed -i -e "s/'.searchpattern.'/'.selection.'/g" -- {} +'
+    echo com
+    execute com
+endfunction
+
+vmap <C-r> :call SubstituteAccrossDirectory()<CR>
