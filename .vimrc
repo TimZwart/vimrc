@@ -51,12 +51,12 @@ function! Netbeans()
     let curline = line(".")
     let curfile = expand("%:p")
     let com0 = 'cygpath -w '.curfile
-    :echo com0
+    :echom com0
     let output = system(com0)
     let winpath = substitute(output, "\n", "", "")
-    :echo winpath
+    :echom winpath
     let com = '!`netbeans "'.winpath.'":'.curline.'`'
-    :echo com
+    :echom com
     execute com
 endfunction
 
@@ -486,3 +486,87 @@ function! SubstituteAccrossDirectory()
 endfunction
 
 vmap <C-r> :call SubstituteAccrossDirectory()<CR>
+
+function! Is_there_a_sln_here(path)
+    let foundsln = 0
+python << EOF
+import vim
+import os
+import re
+foundsln = False
+path = vim.eval("a:path")
+for x in os.listdir(path):
+    if x.startswith("Upload"):
+        vim.command("echo \""+x+"\"")
+    if re.search(".sln$", x):
+        vim.command("echo \"match found\"")
+        vim.command("let foundsln = \'"+x+"\'")
+EOF
+    echom "foundsln"
+    echom foundsln
+    return foundsln
+endfunction
+
+"returns solution path given a path
+function! FindSolutionFile(path)
+    "split up the path
+    let dirs = split(a:path, "/")
+    let curdirs = dirs
+    "echo curdirs
+    "1 is true, 0 is false
+    let solpath_exists = 0
+    let length = len(curdirs)
+    "until we have the git path
+    while solpath_exists is# 0 && length > 0
+        "remove the last element of list
+        let curdirs = Pop(curdirs, length - 1 )
+        "echo curdirs
+        let length = length - 1
+        "join the path together
+        let potentialsolpath = "/".join(curdirs, "/")
+"        echo "potentialsolpath"
+"        echo potentialsolpath
+        "check whether the sln file exist
+        let solpath_exists = Is_there_a_sln_here(potentialsolpath)
+        echom "solpath_exists"
+        echom solpath_exists
+        if type(solpath_exists) == 1
+            echom "solpath_exists is a string"
+            let solpath = potentialsolpath."/".solpath_exists
+            echo "solpath"
+            echo solpath
+            if solpath
+                echo "solpath is also truthy"
+            endif
+        endif
+        "repeat from step 2
+    endwhile
+    if type(solpath_exists) == 0
+        throw 'solution path was not found'
+    endif
+    "return the path to the solution
+    echo solpath
+    return solpath
+endfunction
+
+""Build VS Solution
+function! VSBuild()
+     let curfile = expand('%:p')
+     let solutionfile = FindSolutionFile(curfile)
+     let winpathoutput = system('cygpath -w '.solutionfile)
+     let winpath = substitute(winpathoutput, nr2char(10), ' ', "g")
+     echom winpath
+     new
+     let com = 'read !devenv "'.winpath.'" /Build'
+     echom com
+     "/c/Program\ Files\ (x86)/Microsoft\ Visual\ Studio/2017/Enterprise/Common7/IDE/devenv.exe /Build '
+     ". solutionfile
+     execute com
+endfunction
+
+command! VSBuild call VSBuild()
+
+"Run visual studio solution
+function! VSRun()
+    let curfile = expand('%:p')
+endfunction
