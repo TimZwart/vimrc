@@ -95,6 +95,14 @@ endfunction
 
 command! OpenFile2 call OpenFile2()
 
+function! OpenFile3()
+    let vis = s:get_visual_selection()
+    let com = "tabe " . vis
+    execute com
+endfunction
+
+xnoremap <C-o> :call OpenFile3()<CR>
+
 "opens a tab with results from a grep for the word under the cursor
 function! GrepWord()
     let var = expand("<cword>")
@@ -104,9 +112,9 @@ function! GrepWord()
     execute com
 endfunction
 
-"opens a tab with results from a perg.py for the word under the cursor
 command! GrepWord call GrepWord()
 
+"opens a tab with results from a perg.py for the word under the cursor
 function! PergWord()
     let var = expand("<cword>")
     tabe
@@ -570,3 +578,13 @@ command! VSBuild call VSBuild()
 function! VSRun()
     let curfile = expand('%:p')
 endfunction
+
+function! DiffXML(file1, file2)
+    let file1 = a:file1
+    let file2 = a:file2
+    let com = 'read !~/Downloads/diffxml-0.96B/diffxml/diffxml.cmd '.file1.' '.file2
+    new
+    execute com
+endfunction
+
+command! -nargs=* DiffXML call DiffXML(<f-args>)
