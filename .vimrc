@@ -97,7 +97,8 @@ command! OpenFile2 call OpenFile2()
 
 function! OpenFile3()
     let vis = s:get_visual_selection()
-    let com = "tabe " . vis
+    let path = substitute(vis, "\\", "/", "g")
+    let com = "tabe " . path
     execute com
 endfunction
 
