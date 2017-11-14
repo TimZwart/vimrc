@@ -579,6 +579,8 @@ function! VSRun()
     let curfile = expand('%:p')
 endfunction
 
+"get the difference between two xml files. unfortunately it gives some vague
+"xml output
 function! DiffXML(file1, file2)
     let file1 = a:file1
     let file2 = a:file2
@@ -588,3 +590,6 @@ function! DiffXML(file1, file2)
 endfunction
 
 command! -nargs=* DiffXML call DiffXML(<f-args>)
+
+"i cannot ever remember this when i need it
+command! SelectDirOfFile cd %:p:h
