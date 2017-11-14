@@ -107,10 +107,11 @@ xnoremap <C-o> :call OpenFile3()<CR>
 "opens a tab with results from a grep for the word under the cursor
 function! GrepWord()
     let var = expand("<cword>")
-    tabe
+    tabe Grep_output
     let com = 'read !grep -r "'.var.'"'
     echo com
     execute com
+    set ro
 endfunction
 
 command! GrepWord call GrepWord()
@@ -118,19 +119,21 @@ command! GrepWord call GrepWord()
 "opens a tab with results from a perg.py for the word under the cursor
 function! PergWord()
     let var = expand("<cword>")
-    tabe
+    tabe Perg_Output
     let com = 'read !perg.py . '.var
     echo com
     execute com
+    set ro
 endfunction
 
 command! PergWord call PergWord()
 
 function! Perg(searchterm)
-    tabe
+    tabe Perg_Output
     let com = 'read !perg.py . '.a:searchterm
     echo com
     execute com
+    set ro
 endfunction
             
 command! -nargs=1 Perg call Perg(<q-args>)
@@ -404,8 +407,9 @@ command! MavenEffectivePom call MavenEffectivePom()
 function! Find(filename)
     let com = 'read !find -name "'.a:filename.'"'
     echo com
-    tabe
+    tabe Find_output
     execute com
+    set ro
 endfunction
 
 command! -nargs=1 Find call Find(<q-args>)
