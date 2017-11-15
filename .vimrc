@@ -15,6 +15,9 @@ set expandtab
 "autocomplete menu in command shows all matches
 set wildmenu
 
+"i capitulate to the overwhelming force of the plugins. to use the omnisharper
+execute pathogen#infect()
+
 function! s:get_visual_selection()
   " public domain
   " by mr xolox from stackoverflow, who will appreciate this attribution
@@ -104,10 +107,20 @@ endfunction
 
 xnoremap <C-o> :call OpenFile3()<CR>
 
+let g:pergbuffernumber = 0
+
+function! OpenGrepBuffer()
+    let g:pergbuffernumber = g:pergbuffernumber + 1
+    let bufname = "Grep_output".g:grepbuffernumber
+    let com = "new ".bufname
+    execute com
+endfunction
+
+
 "opens a tab with results from a grep for the word under the cursor
 function! GrepWord()
     let var = expand("<cword>")
-    tabe Grep_output
+    call OpenGrepBuffer()
     let com = 'read !grep -r "'.var.'"'
     echo com
     execute com
@@ -116,10 +129,20 @@ endfunction
 
 command! GrepWord call GrepWord()
 
+"keeps track of the buffer name to use for the next perg window
+let g:pergbuffernumber = 0
+
+function! OpenPergBuffer()
+    let g:pergbuffernumber = g:pergbuffernumber + 1
+    let bufname = "Perg_output".g:pergbuffernumber
+    let com = "new ".bufname
+    execute com
+endfunction
+
 "opens a tab with results from a perg.py for the word under the cursor
 function! PergWord()
     let var = expand("<cword>")
-    tabe Perg_Output
+    call OpenPergBuffer()
     let com = 'read !perg.py . '.var
     echo com
     execute com
@@ -129,7 +152,7 @@ endfunction
 command! PergWord call PergWord()
 
 function! Perg(searchterm)
-    tabe Perg_Output
+    call OpenPergBuffer()
     let com = 'read !perg.py . '.a:searchterm
     echo com
     execute com
@@ -405,7 +428,7 @@ command! MavenEffectivePom call MavenEffectivePom()
 
 "finds a file"
 function! Find(filename)
-    let com = 'read !find -name "'.a:filename.'"'
+    let com = 'read !find -iname "'.a:filename.'"'
     echo com
     tabe Find_output
     execute com
@@ -562,6 +585,14 @@ function! FindSolutionFile(path)
     return solpath
 endfunction
 
+function! GetWinpath()
+    let curfile = expand('%:p')
+    let solutionfile = FindSolutionFile(curfile)
+    let winpathoutput = system('cygpath -w '.solutionfile)
+    let winpath = substitute(winpathoutput, nr2char(10), ' ', "g")
+    return winpath
+endfunction
+
 ""Build VS Solution
 function! VSBuild()
      let curfile = expand('%:p')
@@ -581,8 +612,12 @@ command! VSBuild call VSBuild()
 
 "Run visual studio solution
 function! VSRun()
-    let curfile = expand('%:p')
+    let winpath = GetWinpath()
+    let com = 'read !devenv "'.winpath.'" /Run'
+    execute com
 endfunction
+
+command! VSRun call VSRun()
 
 "get the difference between two xml files. unfortunately it gives some vague
 "xml output
