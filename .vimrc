@@ -107,6 +107,16 @@ endfunction
 
 xnoremap <C-o> :call OpenFile3()<CR>
 
+function! OpenFileVisVsplit()
+    let vis = s:get_visual_selection()
+    let rawpath = substitute(vis, "\\", "/", "g")
+    let path = substitute(vis, "\ ", "\\\\ ", "g")
+    let com = "vsplit " . path 
+    execute com
+endfunction
+
+xnoremap <C-v> :call OpenFileVisVsplit()<CR>
+
 let g:pergbuffernumber = 0
 
 function! OpenGrepBuffer()
@@ -426,11 +436,20 @@ endfunction
 
 command! MavenEffectivePom call MavenEffectivePom()
 
+let g:findbuffernumber = 0
+
+function! OpenFindBuffer()
+    let g:findbuffernumber = g:findbuffernumber + 1
+    let bufname = "Perg_output".g:findbuffernumber
+    let com = "new ".bufname
+    execute com
+endfunction
+
 "finds a file"
 function! Find(filename)
     let com = 'read !find -iname "'.a:filename.'"'
     echo com
-    tabe Find_output
+    call OpenFindBuffer()
     execute com
     set ro
 endfunction
