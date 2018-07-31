@@ -18,6 +18,10 @@ set wildmenu
 "i capitulate to the overwhelming force of the plugins. to use the omnisharper
 execute pathogen#infect()
 
+"set the shell to fish. will need to modify so that this only happens if fish
+"is available
+set shell=/bin/fish
+
 function! s:get_visual_selection()
   " public domain
   " by mr xolox from stackoverflow, who will appreciate this attribution
@@ -181,6 +185,7 @@ function! Unzip()
     "remove the star
     let file = substitute(linetext, "*$", "", "")
     let extraction_dir1 = substitute(file, "\.zip$", "", "")
+    let extraction_dir1 = substitute(file, "\.war$", "", "")
     let extraction_dir = substitute(extraction_dir1, "\.jar$", "", "")
     let com = '!unzip '.file.' -d '.extraction_dir
     execute com
@@ -652,3 +657,12 @@ command! -nargs=* DiffXML call DiffXML(<f-args>)
 
 "i cannot ever remember this when i need it
 command! SelectDirOfFile cd %:p:h
+
+
+"no longer need to do enew and then read
+function! Read(something)
+    enew
+    read something
+endfunction
+
+command! -nargs=1 Read call Read(<q-args>)
