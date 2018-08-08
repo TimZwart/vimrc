@@ -20,7 +20,6 @@ execute pathogen#infect()
 
 "set the shell to fish. will need to modify so that this only happens if fish
 "is available
-set shell=/bin/fish
 
 function! s:get_visual_selection()
   " public domain
@@ -36,10 +35,10 @@ endfunction
 
 "open firefox on the visually selected string
 function! Firefox()
-       let vis = s:get_visual_selection()
-       let visual = substitute(vis, "#", '\\\\#', "")
-       let com = "!firefox " . visual
-       execute com
+  let vis = s:get_visual_selection()
+  let visual = substitute(vis, "#", '\\\\#', "")
+  let com = "!firefox " . visual
+  execute com
 endfunction
 
 vmap <C-f> :call Firefox()<CR>
@@ -55,16 +54,16 @@ let g:netrw_localrmdir='rm -r'
 
 "opens netbeans at the current line of the current file
 function! Netbeans()
-    let curline = line(".")
-    let curfile = expand("%:p")
-    let com0 = 'cygpath -w '.curfile
-    :echom com0
-    let output = system(com0)
-    let winpath = substitute(output, "\n", "", "")
-    :echom winpath
-    let com = '!`netbeans "'.winpath.'":'.curline.'`'
-    :echom com
-    execute com
+  let curline = line(".")
+  let curfile = expand("%:p")
+  let com0 = 'cygpath -w '.curfile
+  :echom com0
+  let output = system(com0)
+  let winpath = substitute(output, "\n", "", "")
+  :echom winpath
+  let com = '!netbeans "'.winpath.'":'.curline
+  :echom com
+  execute com
 endfunction
 
 command! Netbeans call Netbeans()
@@ -83,7 +82,7 @@ function! OpenFile()
         let rawfilename = linetext
     endif
     let filename = fnameescape(rawfilename)
-    execute "tabe " . filename
+    execute "split " . filename
 endfunction
 
 command! OpenFile call OpenFile()
@@ -105,7 +104,7 @@ command! OpenFile2 call OpenFile2()
 function! OpenFile3()
     let vis = s:get_visual_selection()
     let path = substitute(vis, "\\", "/", "g")
-    let com = "tabe " . path
+    let com = "split " . path
     execute com
 endfunction
 
@@ -666,3 +665,59 @@ function! Read(something)
 endfunction
 
 command! -nargs=1 Read call Read(<q-args>)
+
+" This callback will be executed when the entire command is completed
+function! BackgroundCommandClose(channel)
+  " Read the output from the command into the quickfix window
+  split g:backgroundCommandOutput
+  "execute "cfile! " . g:backgroundCommandOutput
+  " Open the quickfix window
+  "copen
+endfunction
+
+function! RunBackgroundCommand(command)
+
+  if exists('g:backgroundCommandOutput')
+    echo 'Already running task in background'
+  else
+    echo 'Running task in background'
+    " Launch the job.
+    " Notice that we're only capturing out, and not err here. This is because, for some reason, the callback
+    " will not actually get hit if we write err out to the same file. Not sure if I'm doing this wrong or?
+    let g:backgroundCommandOutput = tempname()
+    call job_start(a:command, {'close_cb': 'BackgroundCommandClose', 'out_io': 'file', 'out_name': g:backgroundCommandOutput})
+  endif
+endfunction
+
+" So we can use :BackgroundCommand to call our function.
+command! -nargs=+ -complete=shellcmd RunBackgroundCommand call RunBackgroundCommand(<q-args>)
+
+let g:mytimer = "0"
+let g:absolutejavascriptpath = "bs"
+
+function! JavascriptTimerCallback(timerid)
+    echo 'JavascriptTimerCallback'
+    RunBackgroundCommand('jshint '+ g:absolutejavascriptpath )
+endfunction
+
+"on entering javascript file 
+function! JavascriptEnter()
+    let g:mytimer = timer_start(2000, 'JavascriptTimerCallback')
+    echo "g:mytimer"
+    echo g:mytimer
+    let g:absolutejavascriptpath = expand('%:p') 
+endfunction
+
+function! JavascriptLeave()
+    call timer_stop(g:mytimer)
+    echo "leaving js file"
+endfunction
+
+autocmd BufLeave *.js call JavascriptLeave()
+autocmd BufEnter *.js call JavascriptEnter()
+
+function! OpenVimRc()
+    split ~/.vimrc
+endfunction
+
+command VimRC call OpenVimRc()
