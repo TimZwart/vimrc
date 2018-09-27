@@ -20,6 +20,7 @@ execute pathogen#infect()
 
 "set the shell to fish. will need to modify so that this only happens if fish
 "is available
+set shell=/bin/fish
 
 function! s:get_visual_selection()
   " public domain
@@ -69,7 +70,6 @@ endfunction
 command! Netbeans call Netbeans()
 
 "opens current file of grep or perg output
-
 function! OpenFile()
     "check if current line has a colon, if so assume its grep output, else
     "assume its perg output
@@ -81,7 +81,8 @@ function! OpenFile()
     else
         let rawfilename = linetext
     endif
-    let filename = fnameescape(rawfilename)
+    let unixpath = substitute(rawfilename, "\\", "/", "g")
+    let filename = fnameescape(unixpath)
     execute "split " . filename
 endfunction
 
@@ -187,6 +188,8 @@ function! Unzip()
     let extraction_dir1 = substitute(file, "\.war$", "", "")
     let extraction_dir = substitute(extraction_dir1, "\.jar$", "", "")
     let com = '!unzip '.file.' -d '.extraction_dir
+    echo "unzipping"
+    echo com
     execute com
     "select the directory as it was before
     let com2 = 'cd '.lastdir
@@ -720,4 +723,68 @@ function! OpenVimRc()
     split ~/.vimrc
 endfunction
 
-command VimRC call OpenVimRc()
+command! VimRC call OpenVimRc()
+
+" Show syntax highlighting groups for word under cursor
+nmap <C-S-P> :call SynStack()<CR>
+function! SynStack()
+  if !exists("*synstack")
+    return
+  endif
+  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
+
+"set ripgrep as the vim grep
+if executable('rg')
+  set grepprg=rg\ --vimgrep
+endif
+
+"functions for moving windows between tabs, stolen from vim.wikia.com
+function! MoveToPrevTab()
+  "there is only one window
+  if tabpagenr('$') == 1 && winnr('$') == 1
+    return
+  endif
+  "preparing new window
+  let l:tab_nr = tabpagenr('$')
+  let l:cur_buf = bufnr('%')
+  if tabpagenr() != 1
+    close!
+    if l:tab_nr == tabpagenr('$')
+      tabprev
+    endif
+    sp
+  else
+    close!
+    exe "0tabnew"
+  endif
+  "opening current buffer in new window
+  exe "b".l:cur_buf
+endfunc
+
+command! MoveToPrevTab call MoveToPrevTab()
+
+"functions for moving windows between tabs, stolen from vim.wikia.com
+function! MoveToNextTab()
+  "there is only one window
+  if tabpagenr('$') == 1 && winnr('$') == 1
+    return
+  endif
+  "preparing new window
+  let l:tab_nr = tabpagenr('$')
+  let l:cur_buf = bufnr('%')
+  if tabpagenr() < tab_nr
+    close!
+    if l:tab_nr == tabpagenr('$')
+      tabnext
+    endif
+    sp
+  else
+    close!
+    tabnew
+  endif
+  "opening current buffer in new window
+  exe "b".l:cur_buf
+endfunc
+
+command! MoveToNextTab call MoveToNextTab()
